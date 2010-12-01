@@ -1,0 +1,154 @@
+fileFormatVersion: 1
+guid: fa07edc31b843ae4b920570b26f6d7b4
+ModelImporter:
+  importerVersion: 7
+  meshes:
+    scaleFactor: 0.1
+    useFileUnits: 1
+    meshCompression: 0
+    generateColliders: 1
+    swapUVs: 0
+  tangentSpace:
+    normalImportMode: 0
+    tangentImportMode: 1
+    smoothingAngle: 60
+    splitTangents: 1
+  materials:
+    generation: 2
+  animations:
+    generation: 3
+    bakeAnimations: 0
+    animationCompression: 1
+    animationWrapMode: 0
+    splitAnimations: 1
+  nodeInfo:
+    Camera02.T.target:
+    - 100000
+    - 400000
+    Camera01.T.target:
+    - 100002
+    - 400002
+    Camera03.T.target:
+    - 100004
+    - 400004
+    SmallStrai:
+    - 100006
+    - 400006
+    - 3300000
+    - 2300000
+    - 6400028
+    StraightMe:
+    - 100008
+    - 400008
+    - 3300002
+    - 2300002
+    - 6400018
+    Camera01:
+    - 100010
+    - 400010
+    U-part:
+    - 100012
+    - 400012
+    - 3300004
+    - 2300004
+    - 6400022
+    StraightLa:
+    - 100014
+    - 400014
+    - 3300006
+    - 2300006
+    - 6400016
+    T-Joint06:
+    - 100016
+    - 400016
+    - 3300008
+    - 2300008
+    - 6400024
+    LargeU:
+    - 100018
+    - 400018
+    - 3300010
+    - 2300010
+    - 6400000
+    Camera03:
+    - 100020
+    - 400020
+    MediumU:
+    - 100022
+    - 400022
+    - 3300012
+    - 2300012
+    - 6400002
+    Camera02:
+    - 100024
+    - 400024
+    X-joint:
+    - 100026
+    - 400026
+    - 3300014
+    - 2300014
+    - 6400020
+    //RootNode:
+    - 100028
+    - 400028
+    - 11100000
+    SmallXjoin:
+    - 100030
+    - 400030
+    - 3300016
+    - 2300016
+    - 6400012
+    OuterRim:
+    - 100032
+    - 400032
+    - 3300018
+    - 2300018
+    - 6400008
+    OuterWall:
+    - 100034
+    - 400034
+    - 3300020
+    - 2300020
+    - 6400004
+    SmallL:
+    - 100036
+    - 400036
+    - 3300022
+    - 2300022
+    - 6400006
+    Block01:
+    - 100038
+    - 400038
+    - 3300024
+    - 2300024
+    - 6400014
+    L-Section:
+    - 100040
+    - 400040
+    - 3300026
+    - 2300026
+    - 6400026
+    InnerGridF:
+    - 100042
+    - 400042
+    - 3300028
+    - 2300028
+    - 6400010
+AssetImporter:
+  importerVersion: 1
+  fileIDToRecycleName:
+    4300000: OuterWall
+    4300002: OuterRim
+    4300004: InnerGridF
+    4300006: L-Section
+    4300008: Block01
+    4300010: SmallL
+    4300012: StraightMe
+    4300014: SmallStrai
+    4300016: U-part
+    4300018: X-joint
+    4300020: T-Joint06
+    4300022: StraightLa
+    4300024: LargeU
+    4300026: MediumU
+    4300028: SmallXjoin
