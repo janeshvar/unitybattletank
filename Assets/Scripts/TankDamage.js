@@ -1,4 +1,5 @@
 var health : int = 2;
+var score : int = 0;
 
 function HandleCollision(otherGameObject : GameObject) {
 	if(otherGameObject.tag == "Projectile") {
@@ -9,8 +10,12 @@ function HandleCollision(otherGameObject : GameObject) {
 		}
 	}
 		
-	if(health <= 0)
+	if(health <= 0) {
 		Destroy(gameObject);
+		var ownerTank : TankDamage = ownerComp.owner.GetComponent(TankDamage);
+		if(ownerTank)
+			ownerTank.score++;
+	}
 }
 
 function OnControllerColliderHit(hit : ControllerColliderHit) {
