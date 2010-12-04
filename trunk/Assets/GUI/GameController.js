@@ -44,20 +44,24 @@ function OnGUI() {
 	
 	GUI.matrix = Matrix4x4.TRS(Vector3(0, 0, 0), Quaternion.identity, Vector3.one * playerNameTextScale);
 	var p1Health : String = "Health: ";
-	var p1Score : String = "Score: 0";
+	var p1Score : String = "Score: ";
 	if(tank1) {
 		tankDamage1 = tank1.GetComponent(TankDamage);
 		p1Health += tankDamage1.health;
+		p1Score += tankDamage1.score;
 	} else {
 		p1Health += "Dead";
+		p1Score += "Dead";
 	}
 	var p2Health : String = "Health: ";
-	var p2Score : String = "Score: 0";
+	var p2Score : String = "Score: ";
 	if(tank2) {
 		tankDamage2 = tank2.GetComponent(TankDamage);
 		p2Health += tankDamage2.health;
+		p2Score += tankDamage2.score;
 	} else {
 		p2Health += "Dead";
+		p2Score += "Dead";
 	}
 	
 	GUI.Label(Rect(5, 100, 50, 50), "Player 1", "MenuText");
