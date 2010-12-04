@@ -18,6 +18,7 @@ function ShootCannon ()
 		reloading = true;
 		timeSinceLastShot = Time.time;
 		var cannonBallClone : GameObject = Instantiate(CannonBall, transform.position, transform.rotation);
+		cannonBallClone.GetComponent("ProjectileOwner").owner = gameObject;
 		cannonBallClone.rigidbody.velocity = transform.forward * speed;
 	}
 }
