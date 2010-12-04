@@ -43,16 +43,23 @@ function OnGUI() {
 	GUI.Label(Rect(5, 10, 50, 50), timerGUI, "MenuText");
 	
 	GUI.matrix = Matrix4x4.TRS(Vector3(0, 0, 0), Quaternion.identity, Vector3.one * playerNameTextScale);
-	if(!tankDamage1) {
-		tankDamage1 = tank1.GetComponent("TankDamage");
+	var p1Health : String = "Health: ";
+	var p1Score : String = "Score: 0";
+	if(tank1) {
+		tankDamage1 = tank1.GetComponent(TankDamage);
+		p1Health += tankDamage1.health;
+	} else {
+		p1Health += "Dead";
 	}
-	if(!tankDamage2) {
-		tankDamage2 = tank2.GetComponent("TankDamage");
+	var p2Health : String = "Health: ";
+	var p2Score : String = "Score: 0";
+	if(tank2) {
+		tankDamage2 = tank2.GetComponent(TankDamage);
+		p2Health += tankDamage2.health;
+	} else {
+		p2Health += "Dead";
 	}
-	var p1Health : String = "Health: " + tankDamage1.health;
-	var p1Score : String = "Score: ";
-	var p2Health : String = "Health: " + tankDamage2.health;
-	var p2Score : String = "Score: ";
+	
 	GUI.Label(Rect(5, 100, 50, 50), "Player 1", "MenuText");
 	GUI.Label(Rect(5, 120, 50, 50), p1Health, "MenuText");
 	GUI.Label(Rect(5, 140, 50, 50), p1Score, "MenuText");

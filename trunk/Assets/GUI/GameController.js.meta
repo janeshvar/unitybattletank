@@ -3,4 +3,6 @@ guid: 5558349d95a1fd94b9de7427914c7db8
 MonoImporter:
   importerVersion: 1
   defaultReferences:
+    tank1: {}
+    tank2: {}
     GUICustomSkin: {fileID: 11400000, guid: 52ae72648fa8f614db6dd4490e1c1f6b, type: 2}
