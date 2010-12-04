@@ -14,6 +14,11 @@ public class LookAtTank : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		if(target == null) {
+			Destroy(gameObject);
+			return;
+		}
+		
 		Vector3 position = new Vector3(target.position.x + target.forward.x * offset, target.position.y, target.position.z + target.forward.z * offset);
 		transform.LookAt(position);
 		transform.position = new Vector3(position.x, position.y + 5, position.z);
