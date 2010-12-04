@@ -2,9 +2,6 @@ var health : int = 2;
 var score : int = 0;
 var maxHealth : int = 2;
 
-var respawn1 : GameObject;
-var respawn2 : GameObject;
-
 function HandleCollision(otherGameObject : GameObject) {
 	if(otherGameObject.tag == "Projectile") {
 		var ownerComp : ProjectileOwner = otherGameObject.GetComponent(ProjectileOwner);
@@ -32,29 +29,28 @@ function OnCollisionEnter(collision : Collision) {
 }
 
 function respawn(otherTank : GameObject) {
-	var largestDistance : float;
-	var useFirst : boolean = true;
-	var useSecond : boolean = false;
-	if(respawn1) {
-		largestDistance = Vector3.Distance(respawn1.transform.position, otherTank.transform.position);
-	} else
-		useFirst = false;
-		
-	if(respawn2) {
-		if(Vector3.Distance(respawn2.transform.position, otherTank.transform.position) > largestDistance) {
-			useFirst = false;
-			useSecond = true;
+	var respawns : GameObject[] = GameObject.FindGameObjectsWithTag("Respawn");
+	var tanks : GameObject[] = GameObject.FindGameObjectsWithTag("Tank");
+	if(!respawns || respawns.length == 0 || !tanks || tanks.length == 0) return;
+	
+	var largestAvgDistance : float = 0.0;
+	var bestRespawn : GameObject = respawns[0];
+	
+	for(var currRespawn : GameObject in respawns) {
+		var sumOfSqrtDistances : float = 0.0;
+		for(var tank : GameObject in tanks) {
+			sumOfSqrtDistances += Mathf.Sqrt(Vector3.Distance(currRespawn.transform.position,
+				tank.transform.position));
 		}
-	} else
-		useSecond = false;
-	
-	if(useFirst) {
-		transform.position = respawn1.transform.position;
+		
+		var thisAvgDistance : float = sumOfSqrtDistances / tanks.length;
+		if(thisAvgDistance > largestAvgDistance) {
+			largestAvgDistance = thisAvgDistance;
+			bestRespawn = currRespawn;
+		}
 	}
 	
-	if(useSecond) {
-		transform.position = respawn2.transform.position;
-	}
-	
+	transform.position = bestRespawn.transform.position;
+		
 	health = maxHealth;
 }
