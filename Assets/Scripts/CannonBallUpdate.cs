@@ -15,4 +15,9 @@ public class CannonBallUpdate : MonoBehaviour {
 	void Update () {
 		
 	}
+	
+	void OnCollisionEnter(Collision collision) {
+		Destroy(gameObject);
+	}
+	
 }
