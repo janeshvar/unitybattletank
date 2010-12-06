@@ -12,6 +12,61 @@ var tank2 : GameObject;
 private var tankDamage1 : TankDamage;
 private var tankDamage2 : TankDamage;
 var GUICustomSkin : GUISkin;
+//private var guiStyle : GUIStyle = new GUIStyle();
+private var tex : Texture2D;
+private var tankList : GameObject[];
+
+private var guiStyles : GUIStyle[];
+private var texs : Texture2D[];
+
+
+
+function Start () {
+	tankList = GameObject.FindGameObjectsWithTag("Tank");
+	for(var count : int = 0; count < tankList.length; count++) {
+		tankList[count] = gameObject.Find("Player" + (count + 1) + "Tank");
+	}
+	
+	tex = new Texture2D(16, 16, TextureFormat.ARGB32, false);
+	texs = new Texture2D[tankList.length];
+	for(var i : int = 0; i < texs.length; i++)
+		texs[i] = new Texture2D(16, 16, TextureFormat.ARGB32, false);
+	
+	guiStyles = new GUIStyle[tankList.length];
+	for(var j : int = 0; j < guiStyles.length; j++) {
+		guiStyles[j] = new GUIStyle();
+		guiStyles[j].normal.background = texs[j];
+	}
+	
+	for(var a : int = 0; a < tankList.length; a++) {
+		var style : GUIStyle = GUICustomSkin.GetStyle("Player" + a);
+		var lightObject : GameObject;
+		lightObject = tankList[a].Find("Light" + (a + 1));
+		if(!lightObject)
+			Debug.Log("Could not find \"Light\" GameObject attached to tank!");
+		else {
+			var lgt : Light;
+			lgt = lightObject.light;
+			if(!lgt)
+				Debug.Log("No \"Light\" component attached to the light");
+			else {
+				Debug.Log(a + " - " + lgt.color);
+				var color : Color = lgt.color;
+				color.r = color.r / 2.0;
+				color.g = color.g / 2.0;
+				color.b = color.b / 2.0;
+				for(var x : int = 0; x < texs[a].width; x++)
+					for(var y : int = 0; y < texs[a].height; y++)
+						texs[a].SetPixel(x, y, color);
+				texs[a].name = "Player" + a;
+				texs[a].Apply();
+				style.normal.background = texs[a];
+			}
+		}
+	}
+}
+
+
 
 
 // This script should monitor for the number of tanks alive, as well as allow the tanks to ping() to get
@@ -42,33 +97,31 @@ function OnGUI() {
 	}
 	GUI.Label(Rect(5, 10, 50, 50), timerGUI, "MenuText");
 	
-	GUI.matrix = Matrix4x4.TRS(Vector3(0, 0, 0), Quaternion.identity, Vector3.one * playerNameTextScale);
-	var p1Health : String = "Health: ";
-	var p1Score : String = "Score: ";
-	if(tank1) {
-		tankDamage1 = tank1.GetComponent(TankDamage);
-		p1Health += tankDamage1.health;
-		p1Score += tankDamage1.score;
-	} else {
-		p1Health += "Dead";
-		p1Score += "Dead";
-	}
-	var p2Health : String = "Health: ";
-	var p2Score : String = "Score: ";
-	if(tank2) {
-		tankDamage2 = tank2.GetComponent(TankDamage);
-		p2Health += tankDamage2.health;
-		p2Score += tankDamage2.score;
-	} else {
-		p2Health += "Dead";
-		p2Score += "Dead";
-	}
 	
-	GUI.Label(Rect(5, 100, 50, 50), "Player 1", "MenuText");
-	GUI.Label(Rect(5, 120, 50, 50), p1Health, "MenuText");
-	GUI.Label(Rect(5, 140, 50, 50), p1Score, "MenuText");
-	GUI.Label(Rect(5, 250, 50, 50), "Player 2", "MenuText");
-	GUI.Label(Rect(5, 270, 50, 50), p2Health, "MenuText");
-	GUI.Label(Rect(5, 290, 50, 50), p2Score, "MenuText");
+	GUI.matrix = Matrix4x4.TRS(Vector3(0, 0, 0), Quaternion.identity, Vector3.one * playerNameTextScale);
+	if(!tankList)
+		return;
+	for(var a : int = 0; a < tankList.length; a++) {
+		var tank : GameObject = tankList[a];
+		var playerNum : int = a + 1;
+		var nameStr : String = "Player: " + playerNum.ToString();
+		var healthStr : String = "Health: ";
+		var scoreStr : String = "Score: ";
+		var tankDmg : TankDamage = tank.GetComponent(TankDamage);
+		
+		if(tankDmg) {
+			healthStr += tankDmg.health;
+			scoreStr += tankDmg.score;
+		} else {
+			healthStr += "Dead";
+			scoreStr += "0";
+		}
+		
+		var xVal : int = Screen.width - 60;
+		GUI.Box(Rect(xVal - 3, 7 + 70 * a, 60, 50), "", guiStyles[a]);
+		GUI.Label(Rect(xVal, 10 + 70 * a, 50, 50), nameStr, "MenuText");
+		GUI.Label(Rect(xVal, 25 + 70 * a, 50, 50), healthStr, "MenuText");
+		GUI.Label(Rect(xVal, 40 + 70 * a, 50, 50), scoreStr, "MenuText");
+	}
 	
 }
