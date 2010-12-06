@@ -7,13 +7,9 @@ var gameTimer : float = 120.0;
 var gameTimerTextScale : float = 1.5;
 var playerNameTextScale : float = 1.0;
 var playerScoreTextScale : float = 1.0;
-var tank1 : GameObject;
-var tank2 : GameObject;
 private var tankDamage1 : TankDamage;
 private var tankDamage2 : TankDamage;
 var GUICustomSkin : GUISkin;
-//private var guiStyle : GUIStyle = new GUIStyle();
-private var tex : Texture2D;
 private var tankList : GameObject[];
 
 private var guiStyles : GUIStyle[];
@@ -27,7 +23,6 @@ function Start () {
 		tankList[count] = gameObject.Find("Player" + (count + 1) + "Tank");
 	}
 	
-	tex = new Texture2D(16, 16, TextureFormat.ARGB32, false);
 	texs = new Texture2D[tankList.length];
 	for(var i : int = 0; i < texs.length; i++)
 		texs[i] = new Texture2D(16, 16, TextureFormat.ARGB32, false);
@@ -50,7 +45,6 @@ function Start () {
 			if(!lgt)
 				Debug.Log("No \"Light\" component attached to the light");
 			else {
-				Debug.Log(a + " - " + lgt.color);
 				var color : Color = lgt.color;
 				color.r = color.r / 2.0;
 				color.g = color.g / 2.0;
