@@ -17,7 +17,7 @@ function ShootCannon ()
 	if(!reloading) {
 		reloading = true;
 		timeSinceLastShot = Time.time;
-		var newPos : Vector3 = transform.position + 0.7 * transform.forward;
+		var newPos : Vector3 = transform.position + 0.8 * transform.forward;
 		newPos.y += 0.15;
 		var cannonBallClone : GameObject = Instantiate(CannonBall, newPos, transform.rotation);
 		cannonBallClone.GetComponent("ProjectileOwner").owner = gameObject;
