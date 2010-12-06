@@ -3,17 +3,29 @@
 var gameTimer : float = 120.0;
 // Game timer in seconds
 
-
+var GUICustomSkin : GUISkin;
 var gameTimerTextScale : float = 1.5;
 var playerNameTextScale : float = 1.0;
 var playerScoreTextScale : float = 1.0;
-private var tankDamage1 : TankDamage;
-private var tankDamage2 : TankDamage;
-var GUICustomSkin : GUISkin;
-private var tankList : GameObject[];
 
-private var guiStyles : GUIStyle[];
+// Tank information
+private var tankList : GameObject[];
 private var texs : Texture2D[];
+private var lights : Light[];
+
+// FPS GUI Info
+var fpsCounterTextScale : float = 1.0;
+private var fpsNum : float = 0;
+private var fpsTimer : int = 100;
+private var currfpsTimer : int = fpsTimer;
+private var fpsMiniUpdate : int = 10;
+private var currfpsMiniTimer : int = fpsMiniUpdate;
+private var fpsRunningTotal : float = 0;
+
+
+// For knowing when the game is over
+var gameOverBox : GameObject;
+private var gameOver : boolean = false;
 
 
 
@@ -24,28 +36,22 @@ function Start () {
 	}
 	
 	texs = new Texture2D[tankList.length];
+	lights = new Light[tankList.length];
+	
 	for(var i : int = 0; i < texs.length; i++)
 		texs[i] = new Texture2D(16, 16, TextureFormat.ARGB32, false);
 	
-	guiStyles = new GUIStyle[tankList.length];
-	for(var j : int = 0; j < guiStyles.length; j++) {
-		guiStyles[j] = new GUIStyle();
-		guiStyles[j].normal.background = texs[j];
-	}
-	
 	for(var a : int = 0; a < tankList.length; a++) {
-		var style : GUIStyle = GUICustomSkin.GetStyle("Player" + a);
 		var lightObject : GameObject;
 		lightObject = tankList[a].Find("Light" + (a + 1));
 		if(!lightObject)
 			Debug.Log("Could not find \"Light\" GameObject attached to tank!");
 		else {
-			var lgt : Light;
-			lgt = lightObject.light;
-			if(!lgt)
+			lights[a] = lightObject.light;
+			if(!lights[a])
 				Debug.Log("No \"Light\" component attached to the light");
 			else {
-				var color : Color = lgt.color;
+				var color : Color = lights[a].color;
 				color.r = color.r / 2.0;
 				color.g = color.g / 2.0;
 				color.b = color.b / 2.0;
@@ -54,7 +60,6 @@ function Start () {
 						texs[a].SetPixel(x, y, color);
 				texs[a].name = "Player" + a;
 				texs[a].Apply();
-				style.normal.background = texs[a];
 			}
 		}
 	}
@@ -69,12 +74,17 @@ function Start () {
 function Update () {
 	gameTimer -= Time.deltaTime;
 	
-	if(gameTimer <= 0)
-		Application.LoadLevel("GameOver");
+	if(gameTimer <= 0 && !gameOver) {
+		//Application.LoadLevel("GameOver");
+		gameOver = true;
+		Instantiate(gameOverBox);
+	}
 }
 
 
 function OnGUI() {
+	if(gameOver)
+		return;
 	if (GUICustomSkin)
 		GUI.skin = GUICustomSkin;
 	// Transform matrix for (trasform, rotate, scale) - This just allows automatic scaling for everything that uses this matrix
@@ -98,7 +108,7 @@ function OnGUI() {
 	for(var a : int = 0; a < tankList.length; a++) {
 		var tank : GameObject = tankList[a];
 		var playerNum : int = a + 1;
-		var nameStr : String = "Player: " + playerNum.ToString();
+		var nameStr : String = "Player: " + playerNum;
 		var healthStr : String = "Health: ";
 		var scoreStr : String = "Score: ";
 		var tankDmg : TankDamage = tank.GetComponent(TankDamage);
@@ -112,10 +122,31 @@ function OnGUI() {
 		}
 		
 		var xVal : int = Screen.width - 60;
-		GUI.Box(Rect(xVal - 3, 7 + 70 * a, 60, 50), "", guiStyles[a]);
+		var tempColor : Color = GUI.color;
+		if(lights[a])  {
+			GUI.color = Color(1, 1, 1, Mathf.Min(lights[a].intensity / 9.0, 1));
+		}
+		GUI.DrawTexture(Rect(xVal - 3, 7 + 70 * a, 60, 50), texs[a]);
+		GUI.color = tempColor;
 		GUI.Label(Rect(xVal, 10 + 70 * a, 50, 50), nameStr, "MenuText");
 		GUI.Label(Rect(xVal, 25 + 70 * a, 50, 50), healthStr, "MenuText");
 		GUI.Label(Rect(xVal, 40 + 70 * a, 50, 50), scoreStr, "MenuText");
 	}
 	
+	
+	// Draw the FPS GUI item
+	GUI.matrix = Matrix4x4.TRS(Vector3(0, 0, 0), Quaternion.identity, Vector3.one * fpsCounterTextScale);
+	if(currfpsMiniTimer == fpsMiniUpdate) {
+		fpsRunningTotal += 1 / Time.deltaTime;
+		currfpsMiniTimer = 0;
+	} else
+		currfpsMiniTimer++;
+	if(currfpsTimer >= fpsTimer) {
+		fpsNum = fpsRunningTotal / (fpsTimer / fpsMiniUpdate);
+		fpsRunningTotal = 0;
+		currfpsTimer = 0;
+	} else
+		currfpsTimer++;
+	var fpsString : String = "FPS: " + parseInt(Mathf.Round(fpsNum));
+	GUI.Label(Rect(5, Screen.height - 20, 50, 50), fpsString, "MenuText");
 }

@@ -2,6 +2,10 @@ var health : int = 2;
 var score : int = 0;
 var maxHealth : int = 2;
 
+function Update() {
+	gameObject.transform.position.y = 0.55; // Keep the tank from flying off the map hack
+}
+
 function HandleCollision(otherGameObject : GameObject) {
 	if(otherGameObject.tag == "Projectile") {
 		var ownerComp : ProjectileOwner = otherGameObject.GetComponent(ProjectileOwner);
@@ -39,8 +43,7 @@ function respawn(otherTank : GameObject) {
 	for(var currRespawn : GameObject in respawns) {
 		var sumOfSqrtDistances : float = 0.0;
 		for(var tank : GameObject in tanks) {
-			sumOfSqrtDistances += Mathf.Sqrt(Vector3.Distance(currRespawn.transform.position,
-				tank.transform.position));
+			sumOfSqrtDistances += Mathf.Sqrt(Vector3.Distance(currRespawn.transform.position, tank.transform.position));
 		}
 		
 		var thisAvgDistance : float = sumOfSqrtDistances / tanks.length;
