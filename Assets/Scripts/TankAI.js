@@ -2,10 +2,11 @@
 
 private var tankList : GameObject[];
 private var target : GameObject;
-private var canTravel : boolean[] = new boolean[4]; // N E S W directions (orientated for the tank)
+private var canTravel : boolean[] = new boolean[4]; // N E W S directions (orientated for the tank)
 private var canTravelBack : boolean[] = new boolean[4];
 private var canTravelFront : boolean[] = new boolean[4];
 private var hasTraveled : boolean[] = new boolean[4]; // Recoreds the previous environment scan results
+private var extraCanTravel : boolean[] = new boolean[4];
 private var isTurning : boolean[] = new boolean[2]; // Right & left turn bools, respectively
 private var oldRotation : float = 0;
 private var shootScript : FireProjectile;
@@ -68,6 +69,7 @@ function Explore() {
 		var myPos : Vector3;
 		var angle : float;
 		var dist : float = 0.75; // Distance from center of tank to check for walls
+		var extraDist : float = 1.0; // Further check to see if there is something just ahead of an intersection
 		var offset : float = 0.4; // Offset to check for path clearance
 		var initOffset : float = 0.35; // This compensates to make transform.position in center of tank image
 		
@@ -136,18 +138,24 @@ function Explore() {
 				//Debug.DrawRay(myPos, transform.forward * (dist - offset), Color.white);
 			canTravelFront[1] = !Physics.Raycast(myPos, right, dist);
 				//Debug.DrawRay(myPos, right * dist, Color.red);
-			canTravelFront[2] = true; // Assume true, but we'll check this on the back end
-			canTravelFront[3] = !Physics.Raycast(myPos, left, dist);
+			canTravelFront[2] = !Physics.Raycast(myPos, left, dist);
 				//Debug.DrawRay(myPos, left * dist, Color.blue);
+			canTravelFront[3] = true; // Assume true, but we'll check this on the back end
 		
 			myPos = transform.position + (initOffset - offset) * transform.forward;
 			canTravelBack[0] = true; // Assume true, but we'll check this on the front end
 			canTravelBack[1] = !Physics.Raycast(myPos, right, dist);
 				//Debug.DrawRay(myPos, right * dist, Color.red);
-			canTravelBack[2] = !Physics.Raycast(myPos, back, dist - offset);
-				//Debug.DrawRay(myPos, back * (dist - offset), Color.white);
-			canTravelBack[3] = !Physics.Raycast(myPos, left, dist);
+			canTravelBack[2] = !Physics.Raycast(myPos, left, dist);
 				//Debug.DrawRay(myPos, left * dist, Color.blue);
+			canTravelBack[3] = !Physics.Raycast(myPos, back, dist - offset);
+				//Debug.DrawRay(myPos, back * (dist - offset), Color.white);
+			
+			myPos = transform.position + initOffset * transform.forward;
+			extraCanTravel[0] = !Physics.Raycast(myPos, transform.forward, extraDist - offset);
+			extraCanTravel[1] = !Physics.Raycast(myPos, right, extraDist);
+			extraCanTravel[2] = !Physics.Raycast(myPos, left, extraDist);
+			extraCanTravel[3] = !Physics.Raycast(myPos, back, extraDist - offset);
 			
 			for(i = 0; i < 4; i++)
 				canTravel[i] = canTravelFront[i] && canTravelBack[i];
@@ -168,13 +176,50 @@ function Explore() {
 		// ran into a corner.  We also might want to remember which direction we were heading, so we can prevent
 		// the tank from returning from where it came unless its the only direction available.
 		
-		if(canTravel[0]) {
+		var hasChanged : boolean = false;
+		var moreOptions : boolean = false;
+		var newCount : int = 0;
+		var oldCount : int = 0;
+		for(i = 0; i < 4; i++) {
+			if(hasTraveled[i] != canTravel[i]) {
+				if(hasTraveled[i]) // Doing it this way allows us to turn a corner and not immediately turn again
+					oldCount++;   // since we'll detect the exact same number of directions we can go, despite
+				if(canTravel[i])   // the fact that the actual directions are different.  For instance, at a T intersection,
+					newCount++; // we'll have 3 directions we can go, regardless of orientation.
+				hasTraveled[i] = canTravel[i]; // Set the old values here because its convienent
+				hasChanged = true;
+			}
+		}
+		if(hasChanged) {
+			if(newCount > oldCount)
+				moreOptions = true;
+			if(moreOptions) { // If there are more directions we can go, we'll have to choose one
+				var newDir : int = Mathf.FloorToInt(Random.value * 2.99);
+				while(!canTravel[newDir] && !extraCanTravel[newDir]) {
+					newDir = Mathf.FloorToInt(Random.value * 2.99);
+				}
+				Debug.Log("I choose: " + newDir);
+				for(i = 0; i < 3; i++) {
+					if(i != newDir)
+						canTravel[i] = false;
+				}
+			}
+		}
+		
+		
+		if(canTravel[0]) { // Can move forward
 			// Move forward in direction the tank is facing
 			moveDirection = Vector3(0,0,1);
 			moveDirection = transform.TransformDirection(moveDirection);
     		charController.Move(moveDirection * (Time.deltaTime * moveSpeed));
     		
-		} else {
+		} else if(canTravel[1]) { // Can turn right
+			oldRotation = transform.eulerAngles.y;
+			isTurning[0] = true;
+		} else if(canTravel[2]) { // Can turn left
+			oldRotation = transform.eulerAngles.y;
+			isTurning[1] = true;
+		} else if(canTravel[3]) { // If we're in a corner, just turn right and reevaluate
 			oldRotation = transform.eulerAngles.y;
 			isTurning[0] = true;
 		}
