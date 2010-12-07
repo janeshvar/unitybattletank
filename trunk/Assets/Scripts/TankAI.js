@@ -71,8 +71,8 @@ function Explore() {
 		
 		myPos = transform.position + initOffset * transform.forward;
 		
-		// if we're not aligned to a 90 degree turn, align
-		while(!Mathf.Approximately(transform.eulerAngles.y % 90,0.0)) {
+		// if we're not aligned to a 90 degree multiple, align
+		while(Mathf.Abs(transform.eulerAngles.y % 90) > 0.001) {
 			// find the smallest (closest) 90 degree angle
 			var smallestAngle : float = 360.0;
 			var smallestDir : int = 0;
