@@ -1,4 +1,4 @@
-private var moveSpeed : float = 10.0;
+private var moveSpeed : float = 1.0;
 private var rotateSpeed : float = 130.0;
 private var gravity = 100.0;
 private var moveDirection : Vector3 = Vector3.zero;
@@ -12,8 +12,9 @@ function Start()
 
 function Update ()
 {
-	moveSpeed = 1;
-
+	var previousY : float = transform.position.y;
+	
+	
 	// Rotate about the Y axis
 	transform.eulerAngles.y += Input.GetAxis("Horizontal")*(Time.deltaTime * rotateSpeed);
 
@@ -23,5 +24,9 @@ function Update ()
 
 	// Keep clamped to the level grid
     // moveDirection.y -= gravity * Time.deltaTime;
+    
     charController.Move(moveDirection * (Time.deltaTime * moveSpeed));
+    
+    
+    transform.position.y = previousY;
 }
