@@ -5,6 +5,7 @@ private var canTravelBack : boolean[] = new boolean[4];
 private var canTravelFront : boolean[] = new boolean[4];
 private var shootScript : FireProjectile;
 private var rigidBody : Rigidbody;
+private var charController : CharacterController;
 
 private var idleTime : float = 0.1;
 private var attackTime : float = 0.5;
@@ -35,6 +36,7 @@ function Start () {
 	
 	shootScript = gameObject.GetComponent(FireProjectile);
 	rigidBody = gameObject.GetComponentInChildren(Rigidbody);
+	charController = GetComponent(CharacterController);
 	
 	//if(!gameObject.GetComponent(CharacterController)) { // Uncomment to have TankAI script ignore players
 		while(true) {
@@ -129,7 +131,11 @@ function Explore() {
 		// the tank from returning from where it came unless its the only direction available.
 		
 		if(canTravel[0]) {
-			transform.position += transform.forward * Time.deltaTime * moveSpeed;
+			// Move forward in direction the tank is facing
+			moveDirection = Vector3(0,0,1);
+			moveDirection = transform.TransformDirection(moveDirection);
+    		charController.Move(moveDirection * (Time.deltaTime * moveSpeed));
+    		
 			yield WaitForSeconds(0);
 		} else {
 			yield WaitForSeconds(idleTime);
@@ -144,27 +150,31 @@ function Attack() {
 	while(target && isVisible) {
 		// If they are turned closer to us, than we are to them, we need to run!
 		// If we are turned closer to them, finish turning and FIRE (while moving closer)
-		
+		var previousY : float = transform.position.y;
 		
 		var targetPos : Vector3 = target.transform.position;
 		targetPos.y = transform.position.y; // do not allow our tank to rotate up or down
 		var lineOfSight : Vector3 = targetPos - gameObject.transform.position;
-		lineOfSight.Normalize();
+		
+		// maxPositionOffset is the maximum forward movement vector for this frame
+		var maxPositionOffset : Vector3 = transform.forward * Time.deltaTime * moveSpeed;
+		// distanceLeft is negative if we're too close to the enemy and should back up
+		var distanceLeft : float = lineOfSight.magnitude - closestAttackDistance;
+		var maxTravelDistance : float = maxPositionOffset.magnitude;
+		maxPositionOffset.Normalize();
+		maxPositionOffset *= Mathf.Clamp(distanceLeft, -maxTravelDistance, maxTravelDistance);
+		
+		charController.Move(maxPositionOffset);
+		
 		
 		// rotate towards the enemy tank
+		lineOfSight.Normalize();
 		transform.forward = transform.eulerAngles.RotateTowards(
 			transform.forward, lineOfSight, rotationSpeed * Time.deltaTime, 0.0);
 		
-		// positionOffset is the maximum forward movement vector for this frame
-		var positionOffset : Vector3 = transform.forward * Time.deltaTime * moveSpeed;
-		// positionDirection is negative if we're too close to the enemy and should back up
-		var positionDirection : float = lineOfSight.magnitude - closestAttackDistance;
-		// clamp positionDirection to [-1.0, 1.0] so we move no faster than moveSpeed, but might end up
-		//   stopped or backing up
-		transform.position += positionOffset * Mathf.Clamp(positionDirection, -1.0, 1.0);
-		
-		
 		shootScript.ShootCannon();
+		
+		transform.position.y = previousY;
 		yield;
 		isVisible = !Physics.Linecast(transform.position, target.transform.position);
 	}
