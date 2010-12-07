@@ -15,6 +15,7 @@ private var currEnemyCheck : int = 0; // Private counter - ignore
 var locationCheckDelay : int = 0; // 1 skips 1 frame, 2 skips 2 frames, etc...
 private var currLocationCheck : int = 0; // Private counter - ignore
 
+var moveSpeed : float;
 var rotationSpeed : float;
 
 
@@ -53,7 +54,7 @@ function Update() {
 
 function PingPlayers() {
 	
-	yield WaitForSeconds(0);
+	yield;
 }
 
 
@@ -84,10 +85,10 @@ function Explore() {
 		
 		// No tanks found, we need to search our surroundings
 		if(currLocationCheck >= locationCheckDelay) {
-			angle = Mathf.Atan2(transform.forward.z, transform.forward.x);
-			var right : Vector3 = new Vector3(Mathf.Cos(angle - Mathf.PI / 2), 0, Mathf.Sin(angle - Mathf.PI / 2));
-			var back : Vector3 = new Vector3(transform.forward.x * -1, 0, transform.forward.z * -1);
-			var left : Vector3 = new Vector3(Mathf.Cos(angle + Mathf.PI / 2), 0, Mathf.Sin(angle + Mathf.PI / 2));
+			var ninetyDegreeTurn : Quaternion = Quaternion.Euler(0,90,0);
+			var right : Vector3 = ninetyDegreeTurn * transform.forward;
+			var back : Vector3 = ninetyDegreeTurn * right;
+			var left : Vector3 = ninetyDegreeTurn * back;
 			
 			myPos = transform.position + (initOffset + offset) * transform.forward;
 			canTravelFront[0] = !Physics.Raycast(myPos, transform.forward, dist - offset);
@@ -126,7 +127,12 @@ function Explore() {
 		// ran into a corner.  We also might want to remember which direction we were heading, so we can prevent
 		// the tank from returning from where it came unless its the only direction available.
 		
-		yield WaitForSeconds(idleTime);
+		if(canTravel[0]) {
+			transform.position += transform.forward * Time.deltaTime * moveSpeed;
+			yield WaitForSeconds(0);
+		} else {
+			yield WaitForSeconds(idleTime);
+		}
 	}
 	
 }
@@ -144,7 +150,7 @@ function Attack() {
 		
 		// If we are turned closer to them, finish turning and FIRE (while moving closer)
 		shootScript.ShootCannon();
-		yield WaitForSeconds(0);
+		yield;
 		isVisible = !Physics.Linecast(transform.position, target.transform.position);
 	}
 }
