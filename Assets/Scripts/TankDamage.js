@@ -3,7 +3,7 @@ var score : int = 0;
 var maxHealth : int = 2;
 
 function Update() {
-	gameObject.transform.position.y = 0.55; // Keep the tank from flying off the map hack
+	// gameObject.transform.position.y = 0.55; // Keep the tank from flying off the map hack
 }
 
 function HandleCollision(otherGameObject : GameObject) {

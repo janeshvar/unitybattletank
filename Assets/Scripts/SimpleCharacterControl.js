@@ -22,6 +22,6 @@ function Update ()
 	moveDirection = transform.TransformDirection(moveDirection);
 
 	// Keep clamped to the level grid
-    moveDirection.y -= gravity * Time.deltaTime;
+    // moveDirection.y -= gravity * Time.deltaTime;
     charController.Move(moveDirection * (Time.deltaTime * moveSpeed));
 }
