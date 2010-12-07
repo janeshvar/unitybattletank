@@ -4,6 +4,7 @@ private var canTravel : boolean[] = new boolean[4]; // N E S W directions (orien
 private var canTravelBack : boolean[] = new boolean[4];
 private var canTravelFront : boolean[] = new boolean[4];
 private var shootScript : FireProjectile;
+private var rigidBody : Rigidbody;
 
 private var idleTime : float = 0.1;
 private var attackTime : float = 0.5;
@@ -14,6 +15,7 @@ private var currEnemyCheck : int = 0; // Private counter - ignore
 var locationCheckDelay : int = 0; // 1 skips 1 frame, 2 skips 2 frames, etc...
 private var currLocationCheck : int = 0; // Private counter - ignore
 
+var rotationSpeed : float;
 
 
 function Start () {
@@ -30,6 +32,7 @@ function Start () {
 	}
 	
 	shootScript = gameObject.GetComponent(FireProjectile);
+	rigidBody = gameObject.GetComponentInChildren(Rigidbody);
 	
 	//if(!gameObject.GetComponent(CharacterController)) { // Uncomment to have TankAI script ignore players
 		while(true) {
@@ -119,7 +122,7 @@ function Explore() {
 		// Now, we need to choose a random direction from the above list and head that way
 		// We should probably remember what we saw on the last update, so that we can detect when
 		// the number of directions available changes.  If it increases, we're at an intersection, and we need
-		// to choose a new direction to head.  If it decreases, we eight just got out of an intersection or we just
+		// to choose a new direction to head.  If it decreases, we either just got out of an intersection or we just
 		// ran into a corner.  We also might want to remember which direction we were heading, so we can prevent
 		// the tank from returning from where it came unless its the only direction available.
 		
@@ -131,11 +134,17 @@ function Explore() {
 
 function Attack() {
 	var isVisible : boolean = true;
-	while(isVisible) {
+	while(target && isVisible) {
 		// If they are turned closer to us, than we are to them, we need to run!
+		var lineOfSight : Vector3 = target.transform.position - gameObject.transform.position;
+		lineOfSight.Normalize();
+		
+		gameObject.transform.forward = gameObject.transform.eulerAngles.RotateTowards(
+			gameObject.transform.forward, lineOfSight, rotationSpeed * Time.deltaTime, 0.0);
+		
 		// If we are turned closer to them, finish turning and FIRE (while moving closer)
 		shootScript.ShootCannon();
-		yield WaitForSeconds(attackTime);
+		yield WaitForSeconds(0);
 		isVisible = !Physics.Linecast(transform.position, target.transform.position);
 	}
 }
