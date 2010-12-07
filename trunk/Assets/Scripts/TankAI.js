@@ -1,14 +1,16 @@
+@script RequireComponent(CharacterController)
+
 private var tankList : GameObject[];
 private var target : GameObject;
 private var canTravel : boolean[] = new boolean[4]; // N E S W directions (orientated for the tank)
 private var canTravelBack : boolean[] = new boolean[4];
 private var canTravelFront : boolean[] = new boolean[4];
+private var hasTraveled : boolean[] = new boolean[4]; // Recoreds the previous environment scan results
+private var isTurning : boolean[] = new boolean[2]; // Right & left turn bools, respectively
+private var oldRotation : float = 0;
 private var shootScript : FireProjectile;
 private var rigidBody : Rigidbody;
 private var charController : CharacterController;
-
-private var idleTime : float = 0.1;
-private var attackTime : float = 0.5;
 
 var enemyCheckDelay : int = 0; // 1 skips 1 frame, 2 skps 2 frames, etc...
 private var currEnemyCheck : int = 0; // Private counter - ignore
@@ -36,9 +38,9 @@ function Start () {
 	
 	shootScript = gameObject.GetComponent(FireProjectile);
 	rigidBody = gameObject.GetComponentInChildren(Rigidbody);
-	charController = GetComponent(CharacterController);
+	charController = gameObject.GetComponent(CharacterController);
 	
-	//if(!gameObject.GetComponent(CharacterController)) { // Uncomment to have TankAI script ignore players
+	//if(!gameObject.GetComponent(SimpleCharacterControl)) { // Uncomment to have TankAI script ignore players
 		while(true) {
 		//while(false) { // Swap this with the line above it to execute the Update() function, else it'll never be called
 			yield PingPlayers(); // If we don't want to implement this, we should just remove it
@@ -70,6 +72,22 @@ function Explore() {
 		var initOffset : float = 0.35; // This compensates to make transform.position in center of tank image
 		
 		myPos = transform.position + initOffset * transform.forward;
+		
+		while(isTurning[0] || isTurning[1]) { // While turning
+			var newRotation : float = oldRotation;
+			if(isTurning[0]) { // Turning right
+				newRotation = (oldRotation + 90) % 360;
+				transform.eulerAngles.y += Mathf.Clamp(Mathf.Abs(Mathf.DeltaAngle(transform.eulerAngles.y, newRotation)), 0, rotationSpeed*(180.0/Mathf.PI)*Time.deltaTime);
+			} else { // Turning left
+				newRotation = (oldRotation - 90) % 360;
+				transform.eulerAngles.y -= Mathf.Clamp(Mathf.Abs(Mathf.DeltaAngle(transform.eulerAngles.y, newRotation)), 0, rotationSpeed*(180.0/Mathf.PI)*Time.deltaTime);
+			}
+			
+			yield;
+			
+			if(Mathf.Abs(Mathf.DeltaAngle(transform.eulerAngles.y, newRotation)) < 0.001) // If aligned towards the new direction
+				isTurning[0] = isTurning[1] = false;
+		}
 		
 		// if we're not aligned to a 90 degree multiple, align
 		while(Mathf.Abs(transform.eulerAngles.y % 90) > 0.001) {
@@ -134,9 +152,9 @@ function Explore() {
 			for(i = 0; i < 4; i++)
 				canTravel[i] = canTravelFront[i] && canTravelBack[i];
 			
-			/*for(i = 0; i < 4; i++)
-				if(canTravel[i])
-					Debug.Log("I can travel in direction: " + i);*/
+			//for(i = 0; i < 4; i++)
+			//	if(canTravel[i])
+			//		Debug.Log("I can travel in direction: " + i);
 			
 			currLocationCheck = 0;
 		} else {
@@ -156,10 +174,12 @@ function Explore() {
 			moveDirection = transform.TransformDirection(moveDirection);
     		charController.Move(moveDirection * (Time.deltaTime * moveSpeed));
     		
-			yield WaitForSeconds(0);
 		} else {
-			yield WaitForSeconds(idleTime);
+			oldRotation = transform.eulerAngles.y;
+			isTurning[0] = true;
 		}
+		
+		yield;
 	}
 	
 }
