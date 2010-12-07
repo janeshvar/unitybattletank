@@ -73,7 +73,7 @@ function Explore() {
 		
 		// if we're not aligned to a 90 degree turn, align
 		while(!Mathf.Approximately(transform.eulerAngles.y % 90,0.0)) {
-			// turn some
+			// find the smallest (closest) 90 degree angle
 			var smallestAngle : float = 360.0;
 			var smallestDir : int = 0;
 			for(var dir : int=0; dir<4; dir++) {
@@ -83,8 +83,11 @@ function Explore() {
 					smallestDir = dir;
 				}
 			}
+			
+			// rotate towards that nearest 90 degree multiple angle
 			transform.eulerAngles.y += Mathf.Clamp(Mathf.DeltaAngle(transform.eulerAngles.y, smallestDir*90), -(rotationSpeed*(180.0/Mathf.PI)*Time.deltaTime), (rotationSpeed*(180.0/Mathf.PI)*Time.deltaTime));
 			
+			// yield so we keep turning until we reach the 90 degree multiple
 			yield;
 		}
 		
@@ -131,9 +134,9 @@ function Explore() {
 			for(i = 0; i < 4; i++)
 				canTravel[i] = canTravelFront[i] && canTravelBack[i];
 			
-			for(i = 0; i < 4; i++)
+			/*for(i = 0; i < 4; i++)
 				if(canTravel[i])
-					Debug.Log("I can travel in direction: " + i);
+					Debug.Log("I can travel in direction: " + i);*/
 			
 			currLocationCheck = 0;
 		} else {
