@@ -17,6 +17,7 @@ private var currLocationCheck : int = 0; // Private counter - ignore
 
 var moveSpeed : float;
 var rotationSpeed : float;
+var closestAttackDistance : float;
 
 
 function Start () {
@@ -142,13 +143,27 @@ function Attack() {
 	var isVisible : boolean = true;
 	while(target && isVisible) {
 		// If they are turned closer to us, than we are to them, we need to run!
-		var lineOfSight : Vector3 = target.transform.position - gameObject.transform.position;
+		// If we are turned closer to them, finish turning and FIRE (while moving closer)
+		
+		
+		var targetPos : Vector3 = target.transform.position;
+		targetPos.y = transform.position.y; // do not allow our tank to rotate up or down
+		var lineOfSight : Vector3 = targetPos - gameObject.transform.position;
 		lineOfSight.Normalize();
 		
-		gameObject.transform.forward = gameObject.transform.eulerAngles.RotateTowards(
-			gameObject.transform.forward, lineOfSight, rotationSpeed * Time.deltaTime, 0.0);
+		// rotate towards the enemy tank
+		transform.forward = transform.eulerAngles.RotateTowards(
+			transform.forward, lineOfSight, rotationSpeed * Time.deltaTime, 0.0);
 		
-		// If we are turned closer to them, finish turning and FIRE (while moving closer)
+		// positionOffset is the maximum forward movement vector for this frame
+		var positionOffset : Vector3 = transform.forward * Time.deltaTime * moveSpeed;
+		// positionDirection is negative if we're too close to the enemy and should back up
+		var positionDirection : float = lineOfSight.magnitude - closestAttackDistance;
+		// clamp positionDirection to [-1.0, 1.0] so we move no faster than moveSpeed, but might end up
+		//   stopped or backing up
+		transform.position += positionOffset * Mathf.Clamp(positionDirection, -1.0, 1.0);
+		
+		
 		shootScript.ShootCannon();
 		yield;
 		isVisible = !Physics.Linecast(transform.position, target.transform.position);
