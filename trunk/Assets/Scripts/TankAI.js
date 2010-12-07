@@ -71,6 +71,23 @@ function Explore() {
 		
 		myPos = transform.position + initOffset * transform.forward;
 		
+		// if we're not aligned to a 90 degree turn, align
+		while(!Mathf.Approximately(transform.eulerAngles.y % 90,0.0)) {
+			// turn some
+			var smallestAngle : float = 360.0;
+			var smallestDir : int = 0;
+			for(var dir : int=0; dir<4; dir++) {
+				var thisAngle : float = Mathf.Abs(Mathf.DeltaAngle(transform.eulerAngles.y, dir*90));
+				if(thisAngle < smallestAngle) {
+					smallestAngle = thisAngle;
+					smallestDir = dir;
+				}
+			}
+			transform.eulerAngles.y += Mathf.Clamp(Mathf.DeltaAngle(transform.eulerAngles.y, smallestDir*90), -(rotationSpeed*(180.0/Mathf.PI)*Time.deltaTime), (rotationSpeed*(180.0/Mathf.PI)*Time.deltaTime));
+			
+			yield;
+		}
+		
 		// Search for any visible tanks
 		if(currEnemyCheck >= enemyCheckDelay) {
 			for(var i : int = 0; i < tankList.length; i++) {
