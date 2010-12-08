@@ -7,11 +7,13 @@ var GUICustomSkin : GUISkin;
 var gameTimerTextScale : float = 1.5;
 var playerNameTextScale : float = 1.0;
 var playerScoreTextScale : float = 1.0;
+var gameOverTextScale : float = 2.0;
 
 // Tank information
 private var tankList : GameObject[];
 private var texs : Texture2D[];
 private var lights : Light[];
+private var scores : int[];
 
 // FPS GUI Info
 var fpsCounterTextScale : float = 1.0;
@@ -83,10 +85,78 @@ function Update () {
 
 
 function OnGUI() {
-	if(gameOver)
-		return;
 	if (GUICustomSkin)
 		GUI.skin = GUICustomSkin;
+	
+	var tank : GameObject;
+	var playerNum : int;
+	var nameStr : String;
+	var healthStr : String;
+	var scoreStr : String;
+	var tankDmg : TankDamage;
+	var a : int;
+	
+	if(gameOver) {
+		var winner : int = 0;
+		var highScore : int = 0;
+		if(!scores) {
+			scores = new int[tankList.length];
+			if(!tankList)
+				return;
+			for(a = 0; a < tankList.length; a++) {
+				tank = tankList[a];
+				tankDmg = tank.GetComponent(TankDamage);
+				scores[a] = tankDmg.score;
+				if(scores[a] > highScore) {
+					highScore = scores[a];
+					winner = a;
+				}
+			}
+		}
+		// Draw the Game Over text
+		GUI.matrix = Matrix4x4.TRS(Vector3(0, 0, 0), Quaternion.identity, Vector3.one * gameOverTextScale);
+		GUI.Label(Rect(10, 10, 160, 50), "Game Over", "MenuText");
+		
+		GUI.matrix = Matrix4x4.TRS(Vector3(0, 0, 0), Quaternion.identity, Vector3.one * playerNameTextScale);
+		if(!tankList)
+			return;
+		for(a = 0; a < tankList.length; a++) {
+			tank = tankList[a];
+			playerNum = a + 1;
+			nameStr = "Player: " + playerNum;
+			healthStr = "Health: ";
+			scoreStr = "Score: ";
+			tankDmg = tank.GetComponent(TankDamage);
+			
+			if(tankDmg) {
+				scoreStr += scores[a];
+			} else {
+				scoreStr += "0";
+			}
+			
+			var xOffset : int = 10;
+			var xDist : int = 60;
+			if(a == winner) {
+				xOffset += 30;
+				xDist += 100;
+			}
+			var tempColora : Color = GUI.color;
+			if(lights[a])  {
+				GUI.color = Color(1, 1, 1, Mathf.Min(lights[a].intensity / 9.0, 1));
+			}
+			GUI.DrawTexture(Rect(xOffset - 3, 52 + 55 * a, xDist, 35), texs[a]);
+			GUI.color = tempColora;
+			if(a == winner)
+				GUI.Label(Rect(xOffset + 80, 62 + 55 * a, 50, 50), "Winner!", "MenuText");
+			GUI.Label(Rect(xOffset, 55 + 55 * a, 50, 50), nameStr, "MenuText");
+			GUI.Label(Rect(xOffset, 70 + 55 * a, 50, 50), scoreStr, "MenuText");
+		}
+		
+		
+		
+		return;
+	}
+	
 	// Transform matrix for (trasform, rotate, scale) - This just allows automatic scaling for everything that uses this matrix
 	// Setting GUI.matrix to some other value will only affect the GUI stuff below it
 	GUI.matrix = Matrix4x4.TRS(Vector3(0, 0, 0), Quaternion.identity, Vector3.one * gameTimerTextScale);
@@ -105,13 +175,13 @@ function OnGUI() {
 	GUI.matrix = Matrix4x4.TRS(Vector3(0, 0, 0), Quaternion.identity, Vector3.one * playerNameTextScale);
 	if(!tankList)
 		return;
-	for(var a : int = 0; a < tankList.length; a++) {
-		var tank : GameObject = tankList[a];
-		var playerNum : int = a + 1;
-		var nameStr : String = "Player: " + playerNum;
-		var healthStr : String = "Health: ";
-		var scoreStr : String = "Score: ";
-		var tankDmg : TankDamage = tank.GetComponent(TankDamage);
+	for(a = 0; a < tankList.length; a++) {
+		tank = tankList[a];
+		playerNum = a + 1;
+		nameStr = "Player: " + playerNum;
+		healthStr = "Health: ";
+		scoreStr = "Score: ";
+		tankDmg = tank.GetComponent(TankDamage);
 		
 		if(tankDmg) {
 			healthStr += tankDmg.health;
