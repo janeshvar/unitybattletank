@@ -17,12 +17,9 @@ private var scores : int[];
 
 // FPS GUI Info
 var fpsCounterTextScale : float = 1.0;
-private var fpsNum : float = 0;
-private var fpsTimer : int = 100;
-private var currfpsTimer : int = fpsTimer;
-private var fpsMiniUpdate : int = 10;
-private var currfpsMiniTimer : int = fpsMiniUpdate;
-private var fpsRunningTotal : float = 0;
+private var fpsNum : int = 0;
+private var fpsTimer : float = 0;
+private var fpsFramesRendered : int = 0;
 
 
 // For knowing when the game is over
@@ -206,17 +203,14 @@ function OnGUI() {
 	
 	// Draw the FPS GUI item
 	GUI.matrix = Matrix4x4.TRS(Vector3(0, 0, 0), Quaternion.identity, Vector3.one * fpsCounterTextScale);
-	if(currfpsMiniTimer == fpsMiniUpdate) {
-		fpsRunningTotal += 1 / Time.deltaTime;
-		currfpsMiniTimer = 0;
+	
+	fpsFramesRendered++;
+	if(fpsTimer >= 1) {
+		fpsNum = fpsFramesRendered;
+		fpsFramesRendered = 0;
+		fpsTimer = 0;
 	} else
-		currfpsMiniTimer++;
-	if(currfpsTimer >= fpsTimer) {
-		fpsNum = fpsRunningTotal / (fpsTimer / fpsMiniUpdate);
-		fpsRunningTotal = 0;
-		currfpsTimer = 0;
-	} else
-		currfpsTimer++;
+		fpsTimer += Time.deltaTime;
 	var fpsString : String = "FPS: " + parseInt(Mathf.Round(Mathf.Min(fpsNum, 100000)));
 	GUI.Label(Rect(5, Screen.height - 20, 50, 50), fpsString, "MenuText");
 }
