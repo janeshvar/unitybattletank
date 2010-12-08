@@ -24,10 +24,3 @@ function ShootCannon ()
 		cannonBallClone.rigidbody.velocity = transform.forward * speed;
 	}
 }
-
-function Update ()
-{
-    if (Input.GetButtonDown("Fire1") || Input.GetButtonDown("Jump")) {
-        ShootCannon();
-    }
-}

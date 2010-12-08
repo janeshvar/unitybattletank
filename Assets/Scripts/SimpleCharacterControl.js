@@ -14,6 +14,9 @@ function Update ()
 {
 	var previousY : float = transform.position.y;
 	
+	if (Input.GetButtonDown("Fire1") || Input.GetButtonDown("Jump")) {
+        GetComponent(FireProjectile).ShootCannon();
+    }
 	
 	// Rotate about the Y axis
 	transform.eulerAngles.y += Input.GetAxis("Horizontal")*(Time.deltaTime * rotateSpeed);
