@@ -20,6 +20,7 @@ function OnCollisionEnter(collision : Collision) {
 			Destroy(gameObject);
 		}
 	} else {
-		Destroy(gameObject);
+		if(collision.gameObject.tag != "Projectile")
+			Destroy(gameObject);
 	}
 }
