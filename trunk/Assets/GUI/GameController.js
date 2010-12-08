@@ -147,6 +147,6 @@ function OnGUI() {
 		currfpsTimer = 0;
 	} else
 		currfpsTimer++;
-	var fpsString : String = "FPS: " + parseInt(Mathf.Round(fpsNum));
+	var fpsString : String = "FPS: " + parseInt(Mathf.Round(Mathf.Min(fpsNum, 100000)));
 	GUI.Label(Rect(5, Screen.height - 20, 50, 50), fpsString, "MenuText");
 }
