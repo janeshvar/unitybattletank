@@ -3,10 +3,13 @@
 private var tankList : GameObject[];
 private var target : GameObject;
 private var canTravel : boolean[] = new boolean[4]; // N E W S directions (orientated for the tank)
-private var canTravelBack : boolean[] = new boolean[4];
-private var canTravelFront : boolean[] = new boolean[4];
+private var canTravelBackLeft : boolean[] = new boolean[4];
+private var canTravelFrontLeft : boolean[] = new boolean[4];
+private var canTravelBackRight : boolean[] = new boolean[4];
+private var canTravelFrontRight : boolean[] = new boolean[4];
 private var hasTraveled : boolean[] = new boolean[4]; // Recoreds the previous environment scan results
 private var extraCanTravel : boolean[] = new boolean[4];
+private var extraHasTraveled : boolean[] = new boolean[4];
 private var isTurning : boolean[] = new boolean[2]; // Right & left turn bools, respectively
 private var oldRotation : float = 0;
 private var shootScript : FireProjectile;
@@ -68,9 +71,11 @@ function Explore() {
 	while(true) {
 		var myPos : Vector3;
 		var angle : float;
-		var dist : float = 0.75; // Distance from center of tank to check for walls
-		var extraDist : float = 1.0; // Further check to see if there is something just ahead of an intersection
-		var offset : float = 0.4; // Offset to check for path clearance
+		var dist : float = 0.10; // Distance from center of tank to check for walls
+		var horizDist : float = 0.20;
+		var extraDist : float = 1.5; // Further check to see if there is something just ahead of an intersection
+		var vertOffset : float = 0.3; // Offset to check for path clearance
+		var horizOffset : float = 0.20; // Offset to check for path clearance
 		var initOffset : float = 0.35; // This compensates to make transform.position in center of tank image
 		
 		myPos = transform.position + initOffset * transform.forward;
@@ -133,32 +138,54 @@ function Explore() {
 			var back : Vector3 = ninetyDegreeTurn * right;
 			var left : Vector3 = ninetyDegreeTurn * back;
 			
-			myPos = transform.position + (initOffset + offset) * transform.forward;
-			canTravelFront[0] = !Physics.Raycast(myPos, transform.forward, dist - offset);
-				//Debug.DrawRay(myPos, transform.forward * (dist - offset), Color.white);
-			canTravelFront[1] = !Physics.Raycast(myPos, right, dist);
-				//Debug.DrawRay(myPos, right * dist, Color.red);
-			canTravelFront[2] = !Physics.Raycast(myPos, left, dist);
-				//Debug.DrawRay(myPos, left * dist, Color.blue);
-			canTravelFront[3] = true; // Assume true, but we'll check this on the back end
-		
-			myPos = transform.position + (initOffset - offset) * transform.forward;
-			canTravelBack[0] = true; // Assume true, but we'll check this on the front end
-			canTravelBack[1] = !Physics.Raycast(myPos, right, dist);
-				//Debug.DrawRay(myPos, right * dist, Color.red);
-			canTravelBack[2] = !Physics.Raycast(myPos, left, dist);
-				//Debug.DrawRay(myPos, left * dist, Color.blue);
-			canTravelBack[3] = !Physics.Raycast(myPos, back, dist - offset);
-				//Debug.DrawRay(myPos, back * (dist - offset), Color.white);
+			
+			myPos = transform.position + (initOffset + vertOffset) * transform.forward + horizOffset * left;
+			canTravelFrontLeft[0] = !Physics.Raycast(myPos, transform.forward, dist);
+					//Debug.DrawRay(myPos, transform.forward * dist);
+			canTravelFrontLeft[1] = true; // Assume true, but we'll check this on the right end
+			canTravelFrontLeft[2] = !Physics.Raycast(myPos, left, dist + horizDist);
+					//Debug.DrawRay(myPos, left * (dist + horizDist));
+			canTravelFrontLeft[3] = true; // Assume true, but we'll check this on the back end
+			
+			myPos = transform.position + (initOffset - vertOffset) * transform.forward + horizOffset * left;
+			canTravelBackLeft[0] = true; // Assume true, but we'll check this on the front end
+			canTravelBackLeft[1] = true; // Assume true, but we'll check this on the right end
+			canTravelBackLeft[2] = !Physics.Raycast(myPos, left, dist + horizDist);
+					//Debug.DrawRay(myPos, left * (dist + horizDist));
+			canTravelBackLeft[3] = !Physics.Raycast(myPos, back, dist);
+					//Debug.DrawRay(myPos, transform.forward * -dist);
+			
+			
+			myPos = transform.position + (initOffset + vertOffset) * transform.forward + horizOffset * right;
+			canTravelFrontRight[0] = !Physics.Raycast(myPos, transform.forward, dist);
+					//Debug.DrawRay(myPos, transform.forward * dist);
+			canTravelFrontRight[1] = !Physics.Raycast(myPos, right, dist + horizDist);
+					//Debug.DrawRay(myPos, right * (dist + horizDist));
+			canTravelFrontRight[2] = true; // Assume true, but we'll check this on the left end
+			canTravelFrontRight[3] = true; // Assume true, but we'll check this on the back end
+			
+			myPos = transform.position + (initOffset - vertOffset) * transform.forward + horizOffset * right;
+			canTravelBackRight[0] = true; // Assume true, but we'll check this on the front end
+			canTravelBackRight[1] = !Physics.Raycast(myPos, right, dist + horizDist);
+					//Debug.DrawRay(myPos, right * (dist + horizDist));
+			canTravelBackRight[2] = true; // Assume true, but we'll check this on the left end
+			canTravelBackRight[3] = !Physics.Raycast(myPos, back, dist);
+					//Debug.DrawRay(myPos, transform.forward * -dist);
+			
+			
 			
 			myPos = transform.position + initOffset * transform.forward;
-			extraCanTravel[0] = !Physics.Raycast(myPos, transform.forward, extraDist - offset);
+			extraCanTravel[0] = !Physics.Raycast(myPos, transform.forward, extraDist);
+					//Debug.DrawRay(myPos, transform.forward * extraDist, Color.red);
 			extraCanTravel[1] = !Physics.Raycast(myPos, right, extraDist);
+					//Debug.DrawRay(myPos, right * extraDist, Color.red);
 			extraCanTravel[2] = !Physics.Raycast(myPos, left, extraDist);
-			extraCanTravel[3] = !Physics.Raycast(myPos, back, extraDist - offset);
+					//Debug.DrawRay(myPos, left * extraDist, Color.red);
+			extraCanTravel[3] = !Physics.Raycast(myPos, back, extraDist);
+					//Debug.DrawRay(myPos, transform.forward * -extraDist, Color.red);
 			
 			for(i = 0; i < 4; i++)
-				canTravel[i] = canTravelFront[i] && canTravelBack[i];
+				canTravel[i] = canTravelFrontLeft[i] && canTravelBackLeft[i] && canTravelFrontRight[i] && canTravelBackRight[i];
 			
 			//for(i = 0; i < 4; i++)
 			//	if(canTravel[i])
@@ -189,16 +216,24 @@ function Explore() {
 				hasTraveled[i] = canTravel[i]; // Set the old values here because its convienent
 				hasChanged = true;
 			}
+			/*if(extraHasTraveled[i] != extraCanTravel[i]) {
+				if(extraHasTraveled[i])
+					oldCount++;
+				if(extraCanTravel[i])
+					newCount++;
+				extraHasTraveled[i] = extraCanTravel[i];
+				hasChanged = true;
+			}*/
 		}
 		if(hasChanged) {
-			if(newCount > oldCount)
+			if(newCount > oldCount) {
 				moreOptions = true;
+			}
 			if(moreOptions) { // If there are more directions we can go, we'll have to choose one
 				var newDir : int = Mathf.FloorToInt(Random.value * 2.99);
-				while(!canTravel[newDir] && !extraCanTravel[newDir]) {
+				while(!canTravel[newDir] || !extraCanTravel[newDir]) {
 					newDir = Mathf.FloorToInt(Random.value * 2.99);
 				}
-				Debug.Log("I choose: " + newDir);
 				for(i = 0; i < 3; i++) {
 					if(i != newDir)
 						canTravel[i] = false;
@@ -209,9 +244,11 @@ function Explore() {
 		
 		if(canTravel[0]) { // Can move forward
 			// Move forward in direction the tank is facing
+			var prevY : float = transform.position.y;
 			moveDirection = Vector3(0,0,1);
 			moveDirection = transform.TransformDirection(moveDirection);
     		charController.Move(moveDirection * (Time.deltaTime * moveSpeed));
+			transform.position.y = prevY;
     		
 		} else if(canTravel[1]) { // Can turn right
 			oldRotation = transform.eulerAngles.y;
@@ -254,8 +291,7 @@ function Attack() {
 		
 		// rotate towards the enemy tank
 		lineOfSight.Normalize();
-		transform.forward = transform.eulerAngles.RotateTowards(
-			transform.forward, lineOfSight, rotationSpeed * Time.deltaTime, 0.0);
+		transform.forward = transform.eulerAngles.RotateTowards(transform.forward, lineOfSight, rotationSpeed * Time.deltaTime, 0.0);
 		
 		shootScript.ShootCannon();
 		

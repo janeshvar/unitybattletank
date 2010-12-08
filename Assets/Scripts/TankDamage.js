@@ -53,7 +53,7 @@ function respawn(otherTank : GameObject) {
 		}
 	}
 	
-	transform.position = bestRespawn.transform.position;
+	transform.position = bestRespawn.transform.position - 0.35 * transform.forward;
 		
 	health = maxHealth;
 }
