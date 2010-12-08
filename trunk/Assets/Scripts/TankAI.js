@@ -300,7 +300,7 @@ function Attack() {
 		//charController.Move(maxPositionOffset);
 		
 		if(Vector3.Angle(transform.forward, targetPos - (transform.position + 0.35 * transform.forward)) < 1) {
-			//charController.Move(maxPositionOffset);
+			charController.Move(maxPositionOffset);
 			shootScript.ShootCannon();
 		}
 		
