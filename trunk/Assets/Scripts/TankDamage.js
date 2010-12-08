@@ -10,7 +10,6 @@ function HandleCollision(otherGameObject : GameObject) {
 	if(otherGameObject.tag == "Projectile") {
 		var ownerComp : ProjectileOwner = otherGameObject.GetComponent(ProjectileOwner);
 		if(ownerComp && ownerComp.owner != gameObject) { // if we didn't fire the projectile
-			Destroy(otherGameObject); // delete the projectile
 			health--;
 		}
 	}

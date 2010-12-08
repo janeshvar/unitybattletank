@@ -84,20 +84,20 @@ function Explore() {
 			var newRotation : float = oldRotation;
 			if(isTurning[0]) { // Turning right
 				newRotation = (oldRotation + 90) % 360;
-				transform.eulerAngles.y += Mathf.Clamp(Mathf.Abs(Mathf.DeltaAngle(transform.eulerAngles.y, newRotation)), 0, rotationSpeed*(180.0/Mathf.PI)*Time.deltaTime);
+				transform.eulerAngles = Vector3(0, transform.eulerAngles.y + Mathf.Clamp(Mathf.Abs(Mathf.DeltaAngle(transform.eulerAngles.y, newRotation)), 0, rotationSpeed*(180.0/Mathf.PI)*Time.deltaTime), 0);
 			} else { // Turning left
 				newRotation = (oldRotation - 90) % 360;
-				transform.eulerAngles.y -= Mathf.Clamp(Mathf.Abs(Mathf.DeltaAngle(transform.eulerAngles.y, newRotation)), 0, rotationSpeed*(180.0/Mathf.PI)*Time.deltaTime);
+				transform.eulerAngles = Vector3(0, transform.eulerAngles.y - Mathf.Clamp(Mathf.Abs(Mathf.DeltaAngle(transform.eulerAngles.y, newRotation)), 0, rotationSpeed*(180.0/Mathf.PI)*Time.deltaTime), 0);
 			}
 			
 			yield;
 			
-			if(Mathf.Abs(Mathf.DeltaAngle(transform.eulerAngles.y, newRotation)) < 0.001) // If aligned towards the new direction
+			if(Mathf.Abs(Mathf.DeltaAngle(transform.eulerAngles.y, newRotation)) < 0.01) // If aligned towards the new direction
 				isTurning[0] = isTurning[1] = false;
 		}
 		
 		// if we're not aligned to a 90 degree multiple, align
-		while(Mathf.Abs(transform.eulerAngles.y % 90) > 0.001) {
+		while(Mathf.Abs(transform.eulerAngles.y % 90) > 0.01) {
 			// find the smallest (closest) 90 degree angle
 			var smallestAngle : float = 360.0;
 			var smallestDir : int = 0;
@@ -110,7 +110,7 @@ function Explore() {
 			}
 			
 			// rotate towards that nearest 90 degree multiple angle
-			transform.eulerAngles.y += Mathf.Clamp(Mathf.DeltaAngle(transform.eulerAngles.y, smallestDir*90), -(rotationSpeed*(180.0/Mathf.PI)*Time.deltaTime), (rotationSpeed*(180.0/Mathf.PI)*Time.deltaTime));
+			transform.eulerAngles = Vector3(0, transform.eulerAngles.y + Mathf.Clamp(Mathf.DeltaAngle(transform.eulerAngles.y, smallestDir*90), -(rotationSpeed*(180.0/Mathf.PI)*Time.deltaTime), (rotationSpeed*(180.0/Mathf.PI)*Time.deltaTime)), 0);
 			
 			// yield so we keep turning until we reach the 90 degree multiple
 			yield;
@@ -121,9 +121,12 @@ function Explore() {
 			for(var i : int = 0; i < tankList.length; i++) {
 				var rayInfo : RaycastHit;
 				if(!Physics.Linecast(myPos, tankList[i].transform.position + initOffset * tankList[i].transform.forward, rayInfo)) {
-					// This would return true if something collided, so, if false, then we have a clear shot!
-					target = tankList[i]; // Save target info for later when we persue him
-					return; // This escapes the yield in the state machine
+					// Our guns have lign of sight, now lets check for the back of our tanks to make sure we can rotate around corners properly
+					if(!Physics.Linecast(transform.position - initOffset / 2 * transform.forward, tankList[i].transform.position - initOffset / 2 * tankList[i].transform.forward, rayInfo)) {
+						// This would return true if something collided, so, if false, then we have a clear shot!
+						target = tankList[i]; // Save target info for later when we persue him
+						return; // This escapes the yield in the state machine
+					}
 				}
 			}
 			currEnemyCheck = 0;
@@ -286,14 +289,29 @@ function Attack() {
 		maxPositionOffset.Normalize();
 		maxPositionOffset *= Mathf.Clamp(distanceLeft, -maxTravelDistance, maxTravelDistance);
 		
-		charController.Move(maxPositionOffset);
 		
 		
+		var oldEuler : Vector3 = transform.eulerAngles;
+		transform.eulerAngles = Vector3(0, oldEuler.y + Mathf.Clamp(rotationSpeed * (180.0/Mathf.PI) * Time.deltaTime, 0, Vector3.Angle(transform.forward, targetPos - (transform.position + 0.35 * transform.forward))), 0);
+		var turnAngle : float = Vector3.Angle(transform.forward, targetPos - (transform.position + 0.35 * transform.forward));
+		transform.eulerAngles = oldEuler;
+		transform.eulerAngles = Vector3(0, oldEuler.y - Mathf.Clamp(rotationSpeed * (180.0/Mathf.PI) * Time.deltaTime, 0, Vector3.Angle(transform.forward, targetPos - (transform.position + 0.35 * transform.forward))), 0);
+		Debug.Log("Curr: " + turnAngle + " - and other: " + Vector3.Angle(transform.forward, targetPos - (transform.position + 0.35 * transform.forward)));
+		if(turnAngle < Vector3.Angle(transform.forward, targetPos - (transform.position + 0.35 * transform.forward))) {
+			transform.eulerAngles = oldEuler;
+			transform.eulerAngles = Vector3(0, oldEuler.y + Mathf.Clamp(rotationSpeed * (180.0/Mathf.PI) * Time.deltaTime, 0, Vector3.Angle(transform.forward, targetPos - (transform.position + 0.35 * transform.forward))), 0);
+			
+		}
 		// rotate towards the enemy tank
 		lineOfSight.Normalize();
-		transform.forward = transform.eulerAngles.RotateTowards(transform.forward, lineOfSight, rotationSpeed * Time.deltaTime, 0.0);
+		var newForward : Vector3 = Vector3.RotateTowards(transform.forward, lineOfSight, rotationSpeed * Time.deltaTime, 0.0);
+		//transform.forward = newForward;
+		//charController.Move(maxPositionOffset);
 		
-		shootScript.ShootCannon();
+		if(Vector3.Angle(transform.forward, targetPos - (transform.position + 0.35 * transform.forward)) < 1) {
+			//charController.Move(maxPositionOffset);
+			shootScript.ShootCannon();
+		}
 		
 		transform.position.y = previousY;
 		yield;
