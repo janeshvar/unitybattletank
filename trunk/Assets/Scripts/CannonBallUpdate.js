@@ -22,5 +22,10 @@ function OnCollisionEnter(collision : Collision) {
 	} else {
 		if(collision.gameObject.tag != "Projectile")
 			Destroy(gameObject);
+		else {
+			var temp : Vector3 = collision.gameObject.transform.position;
+			collision.gameObject.transform.position = gameObject.transform.position;
+			gameObject.transform.position = temp;
+		}
 	}
 }
