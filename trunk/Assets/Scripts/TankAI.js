@@ -219,14 +219,6 @@ function Explore() {
 				hasTraveled[i] = canTravel[i]; // Set the old values here because its convienent
 				hasChanged = true;
 			}
-			/*if(extraHasTraveled[i] != extraCanTravel[i]) {
-				if(extraHasTraveled[i])
-					oldCount++;
-				if(extraCanTravel[i])
-					newCount++;
-				extraHasTraveled[i] = extraCanTravel[i];
-				hasChanged = true;
-			}*/
 		}
 		if(hasChanged) {
 			if(newCount > oldCount) {
@@ -296,15 +288,14 @@ function Attack() {
 		var turnAngle : float = Vector3.Angle(transform.forward, targetPos - (transform.position + 0.35 * transform.forward));
 		transform.eulerAngles = oldEuler;
 		transform.eulerAngles = Vector3(0, oldEuler.y - Mathf.Clamp(rotationSpeed * (180.0/Mathf.PI) * Time.deltaTime, 0, Vector3.Angle(transform.forward, targetPos - (transform.position + 0.35 * transform.forward))), 0);
-		Debug.Log("Curr: " + turnAngle + " - and other: " + Vector3.Angle(transform.forward, targetPos - (transform.position + 0.35 * transform.forward)));
 		if(turnAngle < Vector3.Angle(transform.forward, targetPos - (transform.position + 0.35 * transform.forward))) {
 			transform.eulerAngles = oldEuler;
 			transform.eulerAngles = Vector3(0, oldEuler.y + Mathf.Clamp(rotationSpeed * (180.0/Mathf.PI) * Time.deltaTime, 0, Vector3.Angle(transform.forward, targetPos - (transform.position + 0.35 * transform.forward))), 0);
 			
 		}
 		// rotate towards the enemy tank
-		lineOfSight.Normalize();
-		var newForward : Vector3 = Vector3.RotateTowards(transform.forward, lineOfSight, rotationSpeed * Time.deltaTime, 0.0);
+		//lineOfSight.Normalize();
+		//var newForward : Vector3 = Vector3.RotateTowards(transform.forward, lineOfSight, rotationSpeed * Time.deltaTime, 0.0);
 		//transform.forward = newForward;
 		//charController.Move(maxPositionOffset);
 		
