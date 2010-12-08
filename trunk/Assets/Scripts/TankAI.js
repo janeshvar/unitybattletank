@@ -44,14 +44,14 @@ function Start () {
 	rigidBody = gameObject.GetComponentInChildren(Rigidbody);
 	charController = gameObject.GetComponent(CharacterController);
 	
-	//if(!gameObject.GetComponent(SimpleCharacterControl)) { // Uncomment to have TankAI script ignore players
+	if(!gameObject.GetComponent(SimpleCharacterControl)) { // Uncomment to have TankAI script ignore players
 		while(true) {
 		//while(false) { // Swap this with the line above it to execute the Update() function, else it'll never be called
 			yield PingPlayers(); // If we don't want to implement this, we should just remove it
 			yield Explore();
 			yield Attack();
 		}
-	//} // Uncomment to have TankAI script ignore players
+	} // Uncomment to have TankAI script ignore players
 }
 
 
